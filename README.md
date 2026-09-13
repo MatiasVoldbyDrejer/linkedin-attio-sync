@@ -8,6 +8,8 @@ This repository is a snapshot shared for forking. It isn't maintained, and issue
 
 ![A LinkedIn conversation with Sync to Attio in its header and a card asking which Attio person it is](docs/images/conversation.png)
 
+▶︎ **[Watch the 24-second demo](docs/images/demo.mp4)** (sample data)
+
 > **Heads-up:** there's no official LinkedIn messaging API. The extension reads each user's own inbox through LinkedIn's internal web API, using their signed-in browser session. That may conflict with LinkedIn's terms of service. Decide whether that's acceptable for your organization before rolling it out.
 
 ## What it looks like
@@ -20,7 +22,7 @@ The toolbar button opens a side panel with sync status, next to whatever tab is 
 
 ![The extension's side panel next to a LinkedIn conversation](docs/images/side-panel.png)
 
-The screenshots use sample data. Regenerate them with `node apps/web/scripts/capture-screenshots.mjs` while `pnpm --filter web dev` runs.
+The screenshots and demo use sample data. While `pnpm --filter web dev` runs, regenerate them with `node apps/web/scripts/capture-screenshots.mjs` and `node apps/web/scripts/record-demo.mjs` (needs ffmpeg).
 
 ## How it works
 

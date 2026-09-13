@@ -12,7 +12,7 @@ import type * as React from 'react'
 import type { ShotName } from './shot-names'
 
 /** Where the social card points people; forks can change it to their own repository. */
-const REPOSITORY = 'github.com/MatiasVoldbyDrejer/linkedin-attio-sync'
+export const REPOSITORY = 'github.com/MatiasVoldbyDrejer/linkedin-attio-sync'
 
 const noop = () => {}
 const noResults = async () => []
@@ -37,7 +37,7 @@ const contact = (id: string, firstName: string, lastName: string, headline: stri
 
 const grace = contact('grace', 'Grace', 'Hopper', 'Rear admiral and compiler pioneer')
 
-const pendingLink: PendingLink = {
+export const pendingLink: PendingLink = {
   conversationUrn: 'urn:li:msg_conversation:(urn:li:fsd_profile:sam,2-grace)',
   threadUrl: null,
   contact: grace,
@@ -64,7 +64,7 @@ const reviewItem = (c: LiParticipant, days: number, extra: Partial<ReviewItem> =
   ...extra,
 })
 
-const review: ReviewResponse = {
+export const review: ReviewResponse = {
   status: 'ready',
   collected: 100,
   target: 100,
@@ -125,7 +125,7 @@ function Initials({ name, className }: { name: string; className?: string }) {
 }
 
 /** Soft tinted backdrop the product sits on. */
-function Stage({ children, className, plain }: { children: React.ReactNode; className?: string; plain?: boolean }) {
+export function Stage({ children, className, plain }: { children: React.ReactNode; className?: string; plain?: boolean }) {
   return (
     <div
       className={cn('relative flex h-screen w-screen items-center justify-center overflow-hidden font-sans text-foreground antialiased', className)}
@@ -151,7 +151,7 @@ function Stage({ children, className, plain }: { children: React.ReactNode; clas
   )
 }
 
-function Window({ title, className, children }: { title?: string; className?: string; children: React.ReactNode }) {
+export function Window({ title, className, children }: { title?: string; className?: string; children: React.ReactNode }) {
   return (
     <div
       className={cn(
@@ -173,15 +173,16 @@ function Window({ title, className, children }: { title?: string; className?: st
 }
 
 /** A generic messaging page: thread list, then the open thread with the Sync pill in its header. */
-function Messaging({
+export function Messaging({
   pill,
-  showCard,
+  card,
   cardPosition = 'right-6 bottom-6',
   compactList,
 }: {
   pill: SyncPillState
-  showCard?: boolean
-  /** Where the card floats in the thread pane; LinkedIn shows it bottom-right */
+  /** Floats over the thread pane, like the extension's card on LinkedIn */
+  card?: React.ReactNode
+  /** Where the card floats; LinkedIn shows it bottom-right */
   cardPosition?: string
   compactList?: boolean
 }) {
@@ -215,7 +216,8 @@ function Messaging({
             <div className="truncate text-[15px] font-semibold">Grace Hopper</div>
             <div className="truncate text-xs text-muted-foreground">Rear admiral and compiler pioneer</div>
           </div>
-          <div className="flex shrink-0 items-center">
+          {/* data-demo: the demo's cursor aims at this pill */}
+          <div className="flex shrink-0 items-center" data-demo="pill">
             <SyncPill variant="inline" state={pill} signedIn onClick={noop} />
             <span className="ml-1 flex size-10 items-center justify-center text-lg text-muted-foreground">⋯</span>
             <span className="flex size-10 items-center justify-center text-lg text-muted-foreground">☆</span>
@@ -240,29 +242,31 @@ function Messaging({
 
         <div className="mx-5 mb-5 h-20 shrink-0 rounded-xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">Write a message…</div>
 
-        {showCard && (
-          <div className={cn('absolute', cardPosition)}>
-            <LinkCard
-              link={pendingLink}
-              total={1}
-              query=""
-              results={null}
-              error={null}
-              busy={false}
-              onQueryChange={noop}
-              onLink={noop}
-              onCreate={noop}
-              onSnooze={noop}
-              onIgnore={noop}
-            />
-          </div>
-        )}
+        {card && <div className={cn('absolute', cardPosition)}>{card}</div>}
       </section>
     </div>
   )
 }
 
-function Panel({ className }: { className?: string }) {
+export function SampleLinkCard() {
+  return (
+    <LinkCard
+      link={pendingLink}
+      total={1}
+      query=""
+      results={null}
+      error={null}
+      busy={false}
+      onQueryChange={noop}
+      onLink={noop}
+      onCreate={noop}
+      onSnooze={noop}
+      onIgnore={noop}
+    />
+  )
+}
+
+export function Panel({ className }: { className?: string }) {
   return (
     <SidePanelView
       status="signedIn"
@@ -288,7 +292,7 @@ function ConversationShot() {
   return (
     <Stage>
       <Window title="Messaging" className="h-[740px] w-[1240px]">
-        <Messaging pill={{ kind: 'picking' }} showCard />
+        <Messaging pill={{ kind: 'picking' }} card={<SampleLinkCard />} />
       </Window>
     </Stage>
   )
@@ -340,9 +344,7 @@ function SocialShot() {
         <h1 className="mt-6 text-[70px] leading-[1.04] font-semibold tracking-[-0.035em] text-[#1d1d1f]">
           Your LinkedIn conversations.
           <br />
-          <span className="bg-linear-to-r from-[#0071e3] via-[#5e5ce6] to-[#bf5af2] bg-clip-text text-transparent">
-            Right in Attio.
-          </span>
+          <span className="text-[#86868b]">Right in Attio.</span>
         </h1>
         <p className="mt-5 text-[25px] leading-snug tracking-[-0.01em] text-[#6e6e73]">
           An open-source Chrome extension for your team. Fork it and make it yours.
@@ -353,7 +355,7 @@ function SocialShot() {
       <div className="absolute top-[418px] left-1/2 w-[1240px] origin-top -translate-x-1/2 scale-[0.84]">
         <Window title="Messaging" className="h-[740px] w-[1240px] shadow-[0_50px_120px_-30px_rgba(15,30,60,0.35)]">
           {/* below the thread header, so its Sync pill stays in view above the crop */}
-          <Messaging pill={{ kind: 'picking' }} showCard cardPosition="top-[76px] right-6" />
+          <Messaging pill={{ kind: 'picking' }} card={<SampleLinkCard />} cardPosition="top-[76px] right-6" />
         </Window>
       </div>
     </Stage>
@@ -368,7 +370,7 @@ const SHOTS: Record<ShotName, () => React.ReactNode> = {
 }
 
 /** The shots sit on a light backdrop, so the UI is shown in light mode whatever the OS uses. */
-function useLightScheme() {
+export function useLightScheme() {
   useLayoutEffect(() => {
     const walk = (rules: CSSRuleList) => {
       for (const rule of Array.from(rules)) {
