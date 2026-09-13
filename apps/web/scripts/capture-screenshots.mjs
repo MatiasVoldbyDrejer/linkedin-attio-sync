@@ -19,8 +19,12 @@ const SHOTS = {
   social: [1600, 900],
 }
 
+// optional shot names as arguments capture just those
+const only = process.argv.slice(2)
+
 mkdirSync(outDir, { recursive: true })
 for (const [name, [width, height]] of Object.entries(SHOTS)) {
+  if (only.length > 0 && !only.includes(name)) continue
   const file = join(outDir, `${name}.png`)
   execFileSync(
     chrome,

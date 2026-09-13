@@ -88,6 +88,8 @@ const review: ReviewResponse = {
   ],
 }
 
+const LAST_SYNC_AT = Date.now() - 2 * 60_000
+
 const THREADS = [
   { name: 'Grace Hopper', snippet: 'Thursday works. I’ll bring my notes.', when: 'Today' },
   { name: 'Ada Lovelace', snippet: 'You: Sending the deck over now', when: 'Yesterday' },
@@ -123,15 +125,24 @@ function Initials({ name, className }: { name: string; className?: string }) {
 }
 
 /** Soft tinted backdrop the product sits on. */
-function Stage({ children, className }: { children: React.ReactNode; className?: string }) {
+function Stage({ children, className, plain }: { children: React.ReactNode; className?: string; plain?: boolean }) {
   return (
     <div
       className={cn('relative flex h-screen w-screen items-center justify-center overflow-hidden font-sans text-foreground antialiased', className)}
-      style={{
-        backgroundColor: '#f3f5fa',
-        backgroundImage:
-          'radial-gradient(55% 65% at 12% 8%, rgba(0,113,227,0.18), transparent 70%), radial-gradient(45% 55% at 92% 96%, rgba(124,92,255,0.14), transparent 70%)',
-      }}
+      style={
+        plain
+          ? {
+              // white fading to Apple's #f5f5f7, with a faint glow where the product sits
+              backgroundColor: '#ffffff',
+              backgroundImage:
+                'radial-gradient(55% 50% at 50% 100%, rgba(0,113,227,0.10), transparent 75%), linear-gradient(#ffffff, #f5f5f7)',
+            }
+          : {
+              backgroundColor: '#f3f5fa',
+              backgroundImage:
+                'radial-gradient(55% 65% at 12% 8%, rgba(0,113,227,0.18), transparent 70%), radial-gradient(45% 55% at 92% 96%, rgba(124,92,255,0.14), transparent 70%)',
+            }
+      }
     >
       {/* the Next.js dev indicator isn't part of the picture */}
       <style>{'nextjs-portal{display:none!important}'}</style>
@@ -162,7 +173,18 @@ function Window({ title, className, children }: { title?: string; className?: st
 }
 
 /** A generic messaging page: thread list, then the open thread with the Sync pill in its header. */
-function Messaging({ pill, showCard, compactList }: { pill: SyncPillState; showCard?: boolean; compactList?: boolean }) {
+function Messaging({
+  pill,
+  showCard,
+  cardPosition = 'right-6 bottom-6',
+  compactList,
+}: {
+  pill: SyncPillState
+  showCard?: boolean
+  /** Where the card floats in the thread pane; LinkedIn shows it bottom-right */
+  cardPosition?: string
+  compactList?: boolean
+}) {
   return (
     <div className="flex h-full bg-background">
       <aside className={cn('flex shrink-0 flex-col border-r border-border/70', compactList ? 'w-[280px]' : 'w-[320px]')}>
@@ -219,7 +241,7 @@ function Messaging({ pill, showCard, compactList }: { pill: SyncPillState; showC
         <div className="mx-5 mb-5 h-20 shrink-0 rounded-xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">Write a message…</div>
 
         {showCard && (
-          <div className="absolute right-6 bottom-6">
+          <div className={cn('absolute', cardPosition)}>
             <LinkCard
               link={pendingLink}
               total={1}
@@ -248,7 +270,7 @@ function Panel({ className }: { className?: string }) {
       me={me}
       update={null}
       health={{ status: 'ok' }}
-      lastSyncAt={Date.now() - 2 * 60_000}
+      lastSyncAt={LAST_SYNC_AT}
       lastError={null}
       pendingCount={1}
       syncing={false}
@@ -311,51 +333,28 @@ function SidePanelShot() {
 
 function SocialShot() {
   return (
-    <Stage className="justify-start">
-      <div className="flex w-[760px] shrink-0 flex-col gap-8 pl-[100px]">
-        <AppIcon className="size-20 shadow-lg" />
-        <h1 className="text-[58px] leading-[1.04] font-semibold tracking-[-0.03em] text-balance">
-          Your LinkedIn conversations, on the right people in Attio.
-        </h1>
-        <p className="max-w-[560px] text-[24px] leading-snug text-pretty text-muted-foreground">
-          An open-source Chrome extension that files the conversations you choose as notes in Attio. Fork it and run it on your
-          own Vercel and Supabase.
-        </p>
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <span className="rounded-full bg-foreground px-5 py-2.5 text-[17px] font-medium text-background">{REPOSITORY}</span>
-          <span className="rounded-full bg-background/80 px-4 py-2.5 text-[17px] text-muted-foreground ring-1 ring-border">
-            MIT licensed
+    // an Apple product page: a short centred headline, one line of copy, a link, then the product cropped by the edge
+    <Stage plain className="flex-col justify-start">
+      <div className="flex flex-col items-center pt-[56px] text-center">
+        <AppIcon className="size-[60px] shadow-md" />
+        <h1 className="mt-6 text-[70px] leading-[1.04] font-semibold tracking-[-0.035em] text-[#1d1d1f]">
+          Your LinkedIn conversations.
+          <br />
+          <span className="bg-linear-to-r from-[#0071e3] via-[#5e5ce6] to-[#bf5af2] bg-clip-text text-transparent">
+            Right in Attio.
           </span>
-        </div>
+        </h1>
+        <p className="mt-5 text-[25px] leading-snug tracking-[-0.01em] text-[#6e6e73]">
+          An open-source Chrome extension for your team. Fork it and make it yours.
+        </p>
+        <p className="mt-3 text-[21px] tracking-[-0.01em] text-[#0066cc]">{REPOSITORY} ›</p>
       </div>
 
-      <div className="relative h-full flex-1">
-        {/* on LinkedIn: the thread header with its pill, then the prompt; the side panel beside them */}
-        <div className="absolute top-[150px] left-[20px] flex h-14 w-[360px] items-center justify-between rounded-2xl bg-background px-4 shadow-[0_24px_60px_-20px_rgba(15,30,60,0.3)] ring-1 ring-black/10">
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">Grace Hopper</div>
-            <div className="truncate text-xs text-muted-foreground">Active now</div>
-          </div>
-          <SyncPill variant="inline" state={{ kind: 'picking' }} signedIn onClick={noop} />
-        </div>
-        <div className="absolute top-[130px] right-[50px] h-[640px] w-[360px] overflow-hidden rounded-[22px] bg-background shadow-[0_40px_90px_-24px_rgba(15,30,60,0.38)] ring-1 ring-black/10">
-          <Panel className="h-full" />
-        </div>
-        <div className="absolute top-[240px] left-[20px] rounded-2xl shadow-[0_40px_90px_-24px_rgba(15,30,60,0.4)]">
-          <LinkCard
-            link={pendingLink}
-            total={1}
-            query=""
-            results={null}
-            error={null}
-            busy={false}
-            onQueryChange={noop}
-            onLink={noop}
-            onCreate={noop}
-            onSnooze={noop}
-            onIgnore={noop}
-          />
-        </div>
+      <div className="absolute top-[418px] left-1/2 w-[1240px] origin-top -translate-x-1/2 scale-[0.84]">
+        <Window title="Messaging" className="h-[740px] w-[1240px] shadow-[0_50px_120px_-30px_rgba(15,30,60,0.35)]">
+          {/* below the thread header, so its Sync pill stays in view above the crop */}
+          <Messaging pill={{ kind: 'picking' }} showCard cardPosition="top-[76px] right-6" />
+        </Window>
       </div>
     </Stage>
   )
