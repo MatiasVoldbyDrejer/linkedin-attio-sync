@@ -1,0 +1,15 @@
+node_modules/
+.next/
+.output/
+.wxt/
+dist/
+coverage/
+.vercel/
+.env*
+!.env.example
+.DS_Store
+*.tsbuildinfo
+
+# Unscrubbed LinkedIn captures never leave this machine
+captures/raw/
+.vercel

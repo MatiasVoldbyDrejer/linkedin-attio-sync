@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Generated with apps/web/scripts/generate-extension-icons.mjs, like the PNGs next to it -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#338DE9" />
+      <stop offset="1" stop-color="#0071E3" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="35.84" fill="url(#bg)" />
+  <g transform="translate(30.72 30.72) scale(2.7733)" fill="none" stroke="#FFFFFF" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m16 3 4 4-4 4" />
+    <path d="M20 7H4" />
+    <path d="m8 21-4-4 4-4" />
+    <path d="M4 17h16" />
+  </g>
+</svg>

@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* the shared components and views live next to this file; apps scan their own sources */
+@source "../**/*.{ts,tsx}";
+
+/* light and dark follow the operating system, like Apple's own surfaces */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+/*
+ * shadcn Rhea (compact Luma) with an Apple palette: system SF type, one blue accent,
+ * soft grey fills and hairline borders. Declared on :host too so the extension's
+ * shadow-root UI on linkedin.com gets the same tokens.
+ */
+:root,
+:host {
+  --radius: 0.75rem;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.218 0.003 286);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.218 0.003 286);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.218 0.003 286);
+
+  /* Apple's button blue #0071e3: white text on it is 4.7:1 */
+  --primary: oklch(0.563 0.193 256);
+  --primary-foreground: oklch(1 0 0);
+  /* text links #0066cc; the button blue is too dim for text on dark grounds */
+  --link: oklch(0.522 0.177 256);
+
+  /* #f5f5f7 fills, #6e6e73 secondary text */
+  --secondary: oklch(0.97 0.0015 286);
+  --secondary-foreground: oklch(0.218 0.003 286);
+  --muted: oklch(0.97 0.0015 286);
+  --muted-foreground: oklch(0.53 0.006 286);
+  --accent: oklch(0.97 0.0015 286);
+  --accent-foreground: oklch(0.218 0.003 286);
+
+  /* systemRed */
+  --destructive: oklch(0.63 0.23 29);
+
+  /* #d2d2d7 hairlines */
+  --border: oklch(0.868 0.005 286);
+  --input: oklch(0.868 0.005 286);
+  --ring: oklch(0.576 0.2 258);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root,
+  :host {
+    --background: oklch(0.198 0.002 286);
+    --foreground: oklch(0.97 0.0015 286);
+    --card: oklch(0.226 0.004 286);
+    --card-foreground: oklch(0.97 0.0015 286);
+    --popover: oklch(0.283 0.004 286);
+    --popover-foreground: oklch(0.97 0.0015 286);
+
+    /* buttons keep #0071e3 as on apple.com; links brighten to #2997ff (5.6:1 on the ground) */
+    --primary: oklch(0.563 0.193 256);
+    --primary-foreground: oklch(1 0 0);
+    --link: oklch(0.669 0.181 252);
+
+    --secondary: oklch(0.283 0.004 286);
+    --secondary-foreground: oklch(0.97 0.0015 286);
+    --muted: oklch(0.283 0.004 286);
+    --muted-foreground: oklch(0.683 0.006 286);
+    --accent: oklch(0.283 0.004 286);
+    --accent-foreground: oklch(0.97 0.0015 286);
+
+    --destructive: oklch(0.678 0.214 30);
+
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 16%);
+    --ring: oklch(0.672 0.169 250);
+  }
+}
+
+@theme inline {
+  /* literal family names: @theme inline resolves at build time */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "SF Mono", ui-monospace, Menlo, Monaco, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-link: var(--link);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "kern";
+  }
+  h1,
+  h2,
+  h3 {
+    /* SF Display-style tight tracking on headings */
+    @apply font-heading tracking-tight;
+  }
+}

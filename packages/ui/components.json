@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-rhea",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@linkedin-sync/ui/components",
+    "utils": "@linkedin-sync/ui/lib/utils",
+    "hooks": "@linkedin-sync/ui/hooks",
+    "lib": "@linkedin-sync/ui/lib",
+    "ui": "@linkedin-sync/ui/components"
+  }
+}

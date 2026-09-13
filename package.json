@@ -1,0 +1,13 @@
+{
+  "name": "linkedin-sync",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "package:extension": "pnpm --filter web package:extension"
+  }
+}

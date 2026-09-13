@@ -1,0 +1,2 @@
+/* the design system (Rhea components, Apple palette) lives in the shared UI package */
+@import "@linkedin-sync/ui/globals.css";

@@ -1,0 +1,7 @@
+# Paths a self-heal PR may touch and still be merged without a human.
+# Read from the default branch only, so a PR can never widen its own scope.
+# Globs: `**` matches across directories, `*` within one path segment.
+
+packages/core/src/linkedin/**
+packages/core/test/fixtures/**
+packages/core/test/linkedin.test.ts

@@ -1,0 +1,33 @@
+{
+  "version": "2026-09-13.2",
+  "baseUrl": "https://www.linkedin.com/voyager/api",
+  "headers": {
+    "x-restli-protocol-version": "2.0.0"
+  },
+  "requests": {
+    "me": {
+      "path": "/me",
+      "accept": "application/vnd.linkedin.normalized+json+2.1"
+    },
+    "conversations": {
+      "path": "/voyagerMessagingGraphQL/graphql?queryId=messengerConversations.0d5e6781bbee71c3e51c8843c6519f48&variables=(mailboxUrn:{mailboxUrn})",
+      "accept": "application/graphql"
+    },
+    "inboxPage": {
+      "path": "/voyagerMessagingGraphQL/graphql?queryId=messengerConversations.9501074288a12f3ae9e3c7ea243bccbf&variables=(query:(predicateUnions:List((conversationCategoryPredicate:(category:PRIMARY_INBOX)))),count:25,mailboxUrn:{mailboxUrn})",
+      "accept": "application/graphql"
+    },
+    "inboxPageAfter": {
+      "path": "/voyagerMessagingGraphQL/graphql?queryId=messengerConversations.9501074288a12f3ae9e3c7ea243bccbf&variables=(query:(predicateUnions:List((conversationCategoryPredicate:(category:PRIMARY_INBOX)))),count:25,mailboxUrn:{mailboxUrn},nextCursor:{cursor})",
+      "accept": "application/graphql"
+    },
+    "conversationById": {
+      "path": "/voyagerMessagingGraphQL/graphql?queryId=messengerConversations.de3cb2a3e8fe576a5d0908f4e00f64cc&variables=(conversationIds:List({conversationUrn}),count:1)",
+      "accept": "application/graphql"
+    },
+    "messages": {
+      "path": "/voyagerMessagingGraphQL/graphql?queryId=messengerMessages.5846eeb71c981f11e0134cb6626cc314&variables=(conversationUrn:{conversationUrn})",
+      "accept": "application/graphql"
+    }
+  }
+}

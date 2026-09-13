@@ -1,0 +1,130 @@
+name: Self-heal auto-merge
+
+# Runs in the base repository's context after CI passes on a PR. It never checks
+# out or executes PR code: only main is checked out, and the PR's files are read
+# through the API as data.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: self-heal-automerge-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  automerge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'claude/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      OWNER: ${{ github.repository_owner }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Check out default branch (allowlist + scope script come from here)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Find the self-heal PR for this commit
+        id: pr
+        run: |
+          pr=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+            --jq "[.[] | select(.state == \"open\" and .head.ref == \"$HEAD_BRANCH\" and .head.repo.full_name == \"$REPO\")][0]")
+          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
+            echo "No open same-repo PR for $HEAD_SHA on $HEAD_BRANCH; nothing to do."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          number=$(jq -r .number <<<"$pr")
+          author=$(jq -r .user.login <<<"$pr")
+          has_label=$(jq -r '[.labels[].name] | index("self-heal") != null' <<<"$pr")
+          current_head=$(jq -r .head.sha <<<"$pr")
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+          if [ "$has_label" != "true" ]; then
+            echo "PR #$number has no self-heal label; skipping."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # routines push and open PRs as the account owner
+          if [ "$author" != "$OWNER" ]; then
+            echo "PR #$number author $author is not the repo owner; skipping."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$current_head" != "$HEAD_SHA" ]; then
+            echo "PR #$number moved to $current_head after CI ran on $HEAD_SHA; the new CI run decides."
+            echo "eligible=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "eligible=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check changed files against the allowlist
+        id: scope
+        if: steps.pr.outputs.eligible == 'true'
+        run: |
+          gh pr diff "${{ steps.pr.outputs.number }}" --repo "$REPO" --name-only > "$RUNNER_TEMP/changed-files"
+          echo "Changed files:"; cat "$RUNNER_TEMP/changed-files"
+
+          set +e
+          node .github/scripts/check-self-heal-scope.mjs \
+            --allowlist .github/self-heal-allowlist \
+            --files "$RUNNER_TEMP/changed-files" > "$RUNNER_TEMP/scope-report"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/scope-report"
+          if [ $status -eq 0 ]; then echo "in_scope=true" >> "$GITHUB_OUTPUT"; else echo "in_scope=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Check the LinkedIn request origin is unchanged
+        id: origin
+        if: steps.scope.outputs.in_scope == 'true'
+        run: |
+          config=packages/core/src/linkedin/request-config.json
+          if ! grep -qFx "$config" "$RUNNER_TEMP/changed-files"; then
+            echo "safe=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          base_url=$(jq -r .baseUrl "$config")
+          head_url=$(gh api -H "Accept: application/vnd.github.raw" "repos/$REPO/contents/$config?ref=$HEAD_SHA" | jq -r .baseUrl)
+          echo "baseUrl on main: $base_url"
+          echo "baseUrl on PR:   $head_url"
+          head_origin=$(sed -E 's#^(https://[^/]+).*#\1#' <<<"$head_url")
+          if [ "$head_origin" = "https://www.linkedin.com" ] && [ "$(sed -E 's#^(https://[^/]+).*#\1#' <<<"$base_url")" = "$head_origin" ]; then
+            echo "safe=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "safe=false" >> "$GITHUB_OUTPUT"
+            printf -- '- `baseUrl` changed from `%s` to `%s`; requests must stay on https://www.linkedin.com\n' "$base_url" "$head_url" >> "$RUNNER_TEMP/scope-report"
+          fi
+
+      - name: Merge
+        if: steps.scope.outputs.in_scope == 'true' && steps.origin.outputs.safe == 'true'
+        run: |
+          number=${{ steps.pr.outputs.number }}
+          gh pr merge "$number" --repo "$REPO" --squash --delete-branch --match-head-commit "$HEAD_SHA"
+          gh pr comment "$number" --repo "$REPO" --body "Auto-merged: CI passed on \`${HEAD_SHA:0:7}\` and every change is inside \`.github/self-heal-allowlist\`. Vercel deploys main, then failed LinkedIn fetches are replayed."
+
+      - name: Hand off to a human
+        if: >-
+          steps.pr.outputs.eligible == 'true' &&
+          (steps.scope.outputs.in_scope != 'true' || steps.origin.outputs.safe != 'true')
+        run: |
+          number=${{ steps.pr.outputs.number }}
+          gh label create needs-human-review --repo "$REPO" --color D93F0B \
+            --description "Self-heal PR outside the auto-merge scope" --force
+          gh pr edit "$number" --repo "$REPO" --add-label needs-human-review
+          {
+            echo "@$OWNER this self-heal PR needs your review; it was not auto-merged."
+            echo
+            echo "Out of scope for auto-merge:"
+            cat "$RUNNER_TEMP/scope-report"
+            echo
+            echo "Allowed paths live in \`.github/self-heal-allowlist\` on the default branch."
+          } > "$RUNNER_TEMP/comment.md"
+          gh pr comment "$number" --repo "$REPO" --body-file "$RUNNER_TEMP/comment.md"

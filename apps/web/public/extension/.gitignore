@@ -1,0 +1,2 @@
+# Built by scripts/package-extension.mjs during `pnpm build`
+*.zip
