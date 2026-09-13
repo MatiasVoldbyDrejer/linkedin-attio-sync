@@ -6,7 +6,21 @@ It's built to be forked: deploy your own copy on Vercel, Supabase and your Attio
 
 This repository is a snapshot shared for forking. It isn't maintained, and issues and pull requests won't be answered; make your fork your own.
 
+![A LinkedIn conversation with Sync to Attio in its header and a card asking which Attio person it is](docs/images/conversation.png)
+
 > **Heads-up:** there's no official LinkedIn messaging API. The extension reads each user's own inbox through LinkedIn's internal web API, using their signed-in browser session. That may conflict with LinkedIn's terms of service. Decide whether that's acceptable for your organization before rolling it out.
+
+## What it looks like
+
+After signing in, each teammate chooses which of their 100 most recent LinkedIn conversations sync. Attio people with the same LinkedIn URL are preselected; the rest get suggestions, search or "create in Attio".
+
+![The review page listing recent LinkedIn conversations with their Attio matches](docs/images/review.png)
+
+The toolbar button opens a side panel with sync status, next to whatever tab is open.
+
+![The extension's side panel next to a LinkedIn conversation](docs/images/side-panel.png)
+
+The screenshots use sample data. Regenerate them with `node apps/web/scripts/capture-screenshots.mjs` while `pnpm --filter web dev` runs.
 
 ## How it works
 
